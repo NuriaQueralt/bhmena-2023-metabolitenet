@@ -20,25 +20,24 @@ def main(data_root):
             if line[0] == ':':
                 continue
             it = line.strip().split(',')
-            #print(it)
             id1 = it[0].split(':')
             id1_iri = f'http://mowl.borg/{id1[0]}_{id1[1]}'
-            #print(it[2])
             id2 = it[2].split(':')
             id2_iri = f'http://mowl.borg/{id2[0]}_{id2[1]}'
-            #print(id2_iri)
             id1_cls = owlapi.create_class(id1_iri)
             id2_cls = owlapi.create_class(id2_iri)
             related_to = owlapi.create_object_property(
                 'http://purl.obolibrary.org/obo/RO_0002616')
-            related_to_some_id2 = owlapi.create_object_some_values_from(
-                related_to, id2_cls)
-            axiom = owlapi.create_subclass_of(
-                id1_cls, related_to_some_id2)
-            owlapi.owl_manager.addAxiom(ABox, axiom)
+            id1_ind = owlapi.create_individual(id1_iri)
+            cassert1 = owlapi.create_class_assertion(id1_cls, id1_ind)
+            id2_ind = owlapi.create_individual(id2_iri)
+            cassert2 = owlapi.create_class_assertion(id2_cls, id2_ind)
+            assertion = owlapi.create_object_property_assertion(related_to,
+             id1_ind, id2_ind)
+            owlapi.owl_manager.addAxiom(ABox, cassert1)
+            owlapi.owl_manager.addAxiom(ABox, cassert2)
+            owlapi.owl_manager.addAxiom(ABox, assertion)
 
-    print('id1: ', id1_iri)
-    print('id2: ',  id2_iri)
     out_file = java.io.File(str(data_root / 'metabolitenet_dataset.owl'))
     owlapi.owl_manager.saveOntology(ABox,
     IRI.create(f'file://{out_file.getAbsolutePath()}'))
