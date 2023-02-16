@@ -11,35 +11,37 @@ import java
 @ck.option('--data-root', '-dr', default=Path('../knowledge-graph/'), type=Path,
             help='Data folder with the ABox (knowledge graph)')
 def main(data_root):
-    hpo_file = data_root / 'hp.owl'
-    annotations_file = data_root / 'phenotype.hpoa'
+    annotations_file = data_root / 'edges_v2023-02-10.csv'
     owlapi = OWLAPIAdapter()
-    hpo = owlapi.owl_manager.loadOntologyFromOntologyDocument(
-        java.io.File(str(hpo_file)))
-    
+    ABox = owlapi.owl_manager.createOntology()
+
     with open(annotations_file) as f:
         for line in f:
-            if line[0] == '#':
+            if line[0] == ':':
                 continue
-            it = line.strip().split()
-            if it[2] == 'NOT':
-                continue
-            dis_id = it[0].split(':')
-            dis_iri = f'http://mowl.borg/{dis_id[0]}_{dis_id[1]}'
-            hp_id = it[3]
-            hp_iri = hp_id.replace('HP:', 'http://purl.obolibrary.org/obo/HP_')
-            hp_cls = owlapi.create_class(hp_iri)
-            dis_cls = owlapi.create_class(dis_iri)
-            has_phenotype = owlapi.create_object_property(
+            it = line.strip().split(',')
+            #print(it)
+            id1 = it[0].split(':')
+            id1_iri = f'http://mowl.borg/{id1[0]}_{id1[1]}'
+            #print(it[2])
+            id2 = it[2].split(':')
+            id2_iri = f'http://mowl.borg/{id2[0]}_{id2[1]}'
+            #print(id2_iri)
+            id1_cls = owlapi.create_class(id1_iri)
+            id2_cls = owlapi.create_class(id2_iri)
+            related_to = owlapi.create_object_property(
                 'http://purl.obolibrary.org/obo/RO_0002616')
-            has_phenotype_some_hp = owlapi.create_object_some_values_from(
-                has_phenotype, hp_cls)
+            related_to_some_id2 = owlapi.create_object_some_values_from(
+                related_to, id2_cls)
             axiom = owlapi.create_subclass_of(
-                dis_cls, has_phenotype_some_hp)
-            owlapi.owl_manager.addAxiom(hpo, axiom)
-        
+                id1_cls, related_to_some_id2)
+            owlapi.owl_manager.addAxiom(ABox, axiom)
+
+    print('id1: ', id1_iri)
+    print('id2: ',  id2_iri)
     out_file = java.io.File(str(data_root / 'metabolitenet_dataset.owl'))
-    owlapi.owl_manager.saveOntology(hpo, IRI.create(f'file://{out_file.getAbsolutePath()}'))
+    owlapi.owl_manager.saveOntology(ABox,
+    IRI.create(f'file://{out_file.getAbsolutePath()}'))
 
 if __name__ == '__main__':
     main()
