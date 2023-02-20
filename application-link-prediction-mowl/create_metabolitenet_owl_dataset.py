@@ -16,6 +16,8 @@ def main(data_root):
     ABox = owlapi.owl_manager.createOntology()
 
     with open(annotations_file) as f:
+        related_to = owlapi.create_object_property(
+            'http://purl.obolibrary.org/obo/RO_0002616')
         for line in f:
             if line[0] == ':':
                 continue
@@ -26,8 +28,6 @@ def main(data_root):
             id2_iri = f'http://mowl.borg/{id2[0]}_{id2[1]}'
             id1_cls = owlapi.create_class(id1_iri)
             id2_cls = owlapi.create_class(id2_iri)
-            related_to = owlapi.create_object_property(
-                'http://purl.obolibrary.org/obo/RO_0002616')
             id1_ind = owlapi.create_individual(id1_iri)
             cassert1 = owlapi.create_class_assertion(id1_cls, id1_ind)
             id2_ind = owlapi.create_individual(id2_iri)
