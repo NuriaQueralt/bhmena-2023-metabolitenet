@@ -23,11 +23,13 @@ def main(data_root):
                 continue
             it = line.strip().split(',')
             id1 = it[0].split(':')
+            id1_iri_cls = f'http://purl.obolibrary.org/obo/{id1[0]}_{id1[1]}'
             id1_iri = f'http://mowl.borg/{id1[0]}_{id1[1]}'
             id2 = it[2].split(':')
+            id2_iri_cls = f'http://purl.obolibrary.org/obo/{id2[0]}_{id2[1]}'
             id2_iri = f'http://mowl.borg/{id2[0]}_{id2[1]}'
-            id1_cls = owlapi.create_class(id1_iri)
-            id2_cls = owlapi.create_class(id2_iri)
+            id1_cls = owlapi.create_class(id1_iri_cls)
+            id2_cls = owlapi.create_class(id2_iri_cls)
             id1_ind = owlapi.create_individual(id1_iri)
             cassert1 = owlapi.create_class_assertion(id1_cls, id1_ind)
             id2_ind = owlapi.create_individual(id2_iri)
